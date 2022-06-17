@@ -9,8 +9,8 @@ import xlwt
 import csv
 from django.utils.timezone import localtime
 from django.template.loader import render_to_string
-from weasyprint import HTML
-import tempfile
+# from weasyprint import HTML
+# import tempfile
 from user_profile.models import UserProfile
 import datetime
 
@@ -146,52 +146,52 @@ def complete_spreadsheet_csv(request):
     writer.writerow(['TOTAL','','','',income_total,expense_total,'BALANCE',str(balance)])
     return response
 
-@login_required(login_url='login')
-def complete_spreadsheet_pdf(request):
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; attachment; filename=Incomes-Expenses-'+ str(request.user.username) + '-' + str(localtime()) + ".pdf"
-    response['Content-Transfer-Encoding'] = 'binary'
+# @login_required(login_url='login')
+# def complete_spreadsheet_pdf(request):
+#     response = HttpResponse(content_type='application/pdf')
+#     response['Content-Disposition'] = 'inline; attachment; filename=Incomes-Expenses-'+ str(request.user.username) + '-' + str(localtime()) + ".pdf"
+#     response['Content-Transfer-Encoding'] = 'binary'
 
-    profile_pic = None
-    currency = 'INR'
-    if UserProfile.objects.filter(user=request.user).exists():
-        user_profile = UserProfile.objects.get(user=request.user)
-        profile_pic = user_profile.profile_pic
-        currency = user_profile.currency[:3]
+#     profile_pic = None
+#     currency = 'INR'
+#     if UserProfile.objects.filter(user=request.user).exists():
+#         user_profile = UserProfile.objects.get(user=request.user)
+#         profile_pic = user_profile.profile_pic
+#         currency = user_profile.currency[:3]
 
-    expenses = Expense.objects.filter(user=request.user).order_by('date')
-    incomes = Income.objects.filter(user=request.user).order_by('date')
-    total_expense = expenses.aggregate(Sum('amount'))['amount__sum']
-    total_income = incomes.aggregate(Sum('amount'))['amount__sum']
+#     expenses = Expense.objects.filter(user=request.user).order_by('date')
+#     incomes = Income.objects.filter(user=request.user).order_by('date')
+#     total_expense = expenses.aggregate(Sum('amount'))['amount__sum']
+#     total_income = incomes.aggregate(Sum('amount'))['amount__sum']
     
-    if total_expense == None:
-        balance = total_income
-    elif total_income == None:
-        balance = -total_expense
-    else:
-        balance = total_income - total_expense
+#     if total_expense == None:
+#         balance = total_income
+#     elif total_income == None:
+#         balance = -total_expense
+#     else:
+#         balance = total_income - total_expense
 
-    html_string = render_to_string('partials/_pdf_output.html',{
-        'title':'Income Expense List',
-        'profile_pic':profile_pic,
-        'expenses':expenses,
-        'incomes':incomes,
-        'total_expense':total_expense,
-        'total_income':total_income,
-        'currency':currency,
-        'balance':balance,
-        'first_name':request.user.first_name,
-        'last_name':request.user.last_name,
-        'username':request.user.username,
-    })
+#     html_string = render_to_string('partials/_pdf_output.html',{
+#         'title':'Income Expense List',
+#         'profile_pic':profile_pic,
+#         'expenses':expenses,
+#         'incomes':incomes,
+#         'total_expense':total_expense,
+#         'total_income':total_income,
+#         'currency':currency,
+#         'balance':balance,
+#         'first_name':request.user.first_name,
+#         'last_name':request.user.last_name,
+#         'username':request.user.username,
+#     })
     
-    html = HTML(string=html_string)
-    result = html.write_pdf()
+#     html = HTML(string=html_string)
+#     result = html.write_pdf()
 
-    with tempfile.NamedTemporaryFile(delete=True) as pdf_output:
-        pdf_output.write(result)
-        pdf_output.flush()
+#     with tempfile.NamedTemporaryFile(delete=True) as pdf_output:
+#         pdf_output.write(result)
+#         pdf_output.flush()
 
-        output = open(pdf_output.name,'rb')
-        response.write(output.read())
-    return response
+#         output = open(pdf_output.name,'rb')
+#         response.write(output.read())
+#     return response
